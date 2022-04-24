@@ -7,7 +7,6 @@ ver 0.001 :
   - js svg 노드 접근 수평, 수직라인 그리기
   - 수평 aspect Ratio
   - 수직 aspect Ratio <br/>
-
-  > * branch-addfunc1 <br/>
-  >   - aspect-ratio 기능구현
+  - branch-addfunc1 <br/>
+  > addfunc1: aspect-ratio 기능구현
   
