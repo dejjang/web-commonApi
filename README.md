@@ -8,6 +8,6 @@ ver 0.001 :
   - 수평 aspect Ratio
   - 수직 aspect Ratio
 
-  > branch-addfunc1
+  > branch-addfunc1 <br/>
   > aspect-ratio 기능구현
   
