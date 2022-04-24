@@ -9,5 +9,5 @@ ver 0.001 :
   - 수직 aspect Ratio <br/>
 
   > * branch-addfunc1 <br/>
-  > - aspect-ratio 기능구현
+  >   - aspect-ratio 기능구현
   
