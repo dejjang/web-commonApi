@@ -4,8 +4,8 @@
 
 ver 0.002 :
 *  API 제작 [진행]
-  - branch-addfunc1
-   > timeline 클래스구현
+    - branch-addfunc1
+      > timeline 클래스구현
 
 ver 0.001 : 
 * 초기 필요 기능 분석 [완료]
