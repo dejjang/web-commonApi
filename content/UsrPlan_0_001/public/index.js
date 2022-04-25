@@ -10,7 +10,7 @@
 
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.aspect_ratio = void 0;
+exports.TIMELINE = exports.aspect_ratio = void 0;
 var aspect_ratio = /** @class */ (function () {
     function aspect_ratio(screen_size, disp_size, offset) {
         if (offset === void 0) { offset = 0; }
@@ -42,6 +42,12 @@ var aspect_ratio = /** @class */ (function () {
     return aspect_ratio;
 }());
 exports.aspect_ratio = aspect_ratio;
+var TIMELINE = /** @class */ (function () {
+    function TIMELINE() {
+    }
+    return TIMELINE;
+}());
+exports.TIMELINE = TIMELINE;
 
 
 /***/ })
@@ -108,14 +114,45 @@ function main2() {
     var scr_h = $svg.clientHeight - offset;
     var aspect_w = new util_1.aspect_ratio(scr_w, 7); //월~일 (7의배수)
     var aspect_h = new util_1.aspect_ratio(scr_h, 24, offset); //0h~24h (24의 배수)
+    //column 칸
     var pos_x = aspect_w.getPosition_px(1);
-    var pos_y = aspect_h.getPosition_px(24);
-    //let screen_h = $svg.clientHeight; //px
-    var key = ["x1", "y1", "x2", "y2", "stroke", "stroke-width"];
-    var val = [0, pos_y, 500, pos_y, "#1abc9c", "2px"];
-    var $node = create_shape("line", key, val);
+    var key = ["x", "height", "y", "width", "fill"];
+    var val = [pos_x * 1, scr_h + offset, 0, pos_x, "#b2bec3"];
+    var $node = create_shape("rect", key, val);
     var $tmp_wrap = document.createDocumentFragment();
     $tmp_wrap.appendChild($node);
+    // 요일 표시
+    //mon
+    var cell_w = aspect_w.getPosition_px(1);
+    pos_x = aspect_w.getPosition_px(0);
+    key = ["x", "y", "fill", "font-size", "text-anchor"];
+    val = [pos_x + cell_w / 2, 10 + offset, "black", "15px", "middle"];
+    $node = create_shape("text", key, val);
+    $node.textContent = "월";
+    $tmp_wrap.appendChild($node);
+    //tue
+    pos_x = aspect_w.getPosition_px(1);
+    key = ["x", "y", "fill", "font-size", "text-anchor"];
+    val = [pos_x + cell_w / 2, 10 + offset, "black", "15px", "middle"];
+    $node = create_shape("text", key, val);
+    $node.textContent = "화";
+    $tmp_wrap.appendChild($node);
+    //wen
+    pos_x = aspect_w.getPosition_px(2);
+    key = ["x", "y", "fill", "font-size", "text-anchor"];
+    val = [pos_x + cell_w / 2, 10 + offset, "black", "15px", "middle"];
+    $node = create_shape("text", key, val);
+    $node.textContent = "수";
+    $tmp_wrap.appendChild($node);
+    //row
+    //let screen_h = $svg.clientHeight; //px
+    for (var i = 1; i < 25; i++) {
+        var pos_y = aspect_h.getPosition_px(i);
+        key = ["x1", "y1", "x2", "y2", "stroke", "stroke-width"];
+        val = [0, pos_y, 550, pos_y, "#dfe6e9", "px"];
+        $node = create_shape("line", key, val);
+        $tmp_wrap.appendChild($node);
+    }
     $svg.appendChild($tmp_wrap);
 }
 function main() {

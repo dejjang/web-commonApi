@@ -30,16 +30,51 @@ function main2() {
   let aspect_w = new aspect_ratio(scr_w, 7); //월~일 (7의배수)
   let aspect_h = new aspect_ratio(scr_h, 24, offset); //0h~24h (24의 배수)
 
+  //column 칸
   let pos_x = aspect_w.getPosition_px(1);
-  let pos_y = aspect_h.getPosition_px(24);
-
-  //let screen_h = $svg.clientHeight; //px
-
-  let key = ["x1", "y1", "x2", "y2", "stroke", "stroke-width"];
-  let val = [0, pos_y, 500, pos_y, "#1abc9c", "2px"];
-  let $node: Element = create_shape("line", key, val);
+  let key = ["x", "height", "y", "width", "fill"];
+  let val = [pos_x * 1, scr_h + offset, 0, pos_x, "#b2bec3"];
+  let $node: Element = create_shape("rect", key, val);
   let $tmp_wrap = document.createDocumentFragment();
   $tmp_wrap.appendChild($node);
+
+  // 요일 표시
+  //mon
+  let cell_w = aspect_w.getPosition_px(1);
+  pos_x = aspect_w.getPosition_px(0);
+  key = ["x", "y", "fill", "font-size", "text-anchor"];
+  val = [pos_x + cell_w / 2, 10 + offset, "black", "15px", "middle"];
+  $node = create_shape("text", key, val);
+  $node.textContent = "월";
+  $tmp_wrap.appendChild($node);
+
+  //tue
+  pos_x = aspect_w.getPosition_px(1);
+  key = ["x", "y", "fill", "font-size", "text-anchor"];
+  val = [pos_x + cell_w / 2, 10 + offset, "black", "15px", "middle"];
+  $node = create_shape("text", key, val);
+  $node.textContent = "화";
+  $tmp_wrap.appendChild($node);
+
+  //wen
+  pos_x = aspect_w.getPosition_px(2);
+  key = ["x", "y", "fill", "font-size", "text-anchor"];
+  val = [pos_x + cell_w / 2, 10 + offset, "black", "15px", "middle"];
+  $node = create_shape("text", key, val);
+  $node.textContent = "수";
+  $tmp_wrap.appendChild($node);
+
+  //row
+
+  //let screen_h = $svg.clientHeight; //px
+  for (let i = 1; i < 25; i++) {
+    let pos_y = aspect_h.getPosition_px(i);
+    key = ["x1", "y1", "x2", "y2", "stroke", "stroke-width"];
+    val = [0, pos_y, 550, pos_y, "#dfe6e9", "px"];
+    $node = create_shape("line", key, val);
+    $tmp_wrap.appendChild($node);
+  }
+
   $svg.appendChild($tmp_wrap);
 }
 
