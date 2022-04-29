@@ -3,9 +3,9 @@
 웹 콘테츠 API 개발
 ver 0.003 :
 - branch-addfunc1
-      > timeline 클래스구현
-      > -week head 구현
-      > -24h time head 구현
+> timeline 클래스구현
+> -week head 구현
+> -24h time head 구현
       
 ver 0.002 :
 *  API 제작 [진행]
