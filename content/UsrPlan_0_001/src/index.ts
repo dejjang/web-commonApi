@@ -1,26 +1,15 @@
-import { aspect_ratio } from "./lib/util";
+import { TIMELINE } from "./lib/util";
 
-var $svg = document.getElementsByClassName("canvas")[0];
-//let $svg = document.querySelector(".canvas");
-//let CONST_LINE = '<line class="line_{idx}" x1={x1} y1={y1} x2={x2} y2={y2} />';
+function main3() {
+  var $svg = document.getElementsByClassName("canvas")[0];
+  let scr_w = $svg.clientWidth;
+  let scr_h = $svg.clientHeight;
 
-function replace_html(src: string, key: string[], val: any[]): string {
-  key.map((key, idx) => {
-    src = src.replace(`{${key}}`, String(val[idx]));
-  });
-
-  return src;
+  let tl = new TIMELINE({ w: scr_w, h: scr_h });
+  tl.draw();
 }
-function create_shape(type: string, prop: string[], val: any[]): Element {
-  let xmlns = "http://www.w3.org/2000/svg";
-  let $horizon_line = document.createElementNS(xmlns, type);
-  prop.map((prop, idx) => {
-    $horizon_line.setAttribute(prop, String(val[idx]));
-  });
-  return $horizon_line;
-}
-const LM = 2;
-
+main3();
+/*
 function main2() {
   // aspect ratio'
   let offset = 10;
@@ -104,8 +93,7 @@ function main() {
   // 3.
   $svg.appendChild($tmp_wrap);
 }
-
-main2();
+*/
 
 /*
 let xmlns = "http://www.w3.org/2000/svg";
