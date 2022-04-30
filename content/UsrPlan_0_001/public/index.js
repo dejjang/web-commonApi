@@ -45,11 +45,13 @@ var aspect_ratio = /** @class */ (function () {
 exports.aspect_ratio = aspect_ratio;
 var TIMELINE = /** @class */ (function () {
     function TIMELINE(screen_size) {
+        this._screen_size = screen_size;
         this._$root = document.getElementsByClassName("canvas")[0];
         this._aspect_week = new aspect_ratio(screen_size["w"], 7);
         this._aspect_time = new aspect_ratio(screen_size["h"], 24);
         var pos_x = this._aspect_week.getPosition_px(1);
         this._offset_pos = { x: 100, y: 10 };
+        this._offset_width = 50;
         /*
         let key = ["x", "height", "y", "width", "fill"];
         let val = [offset_x * 1, screen_size["h"] + offset_y, 0, pos_x, "#b2bec3"];
@@ -62,9 +64,11 @@ var TIMELINE = /** @class */ (function () {
     // *public begin*
     //LDH8282 func: addplan(['name', 'desc', 'date_start', 'date_end', 'fill_color'])
     TIMELINE.prototype.draw = function () {
-        var days = [1, 2, 3, 4, 5, 6, 7];
+        var days = [1, 2, 3, 4, 5, 6, 7]; //LDH8282 매개변수에서 입력가능하도록
         this.rowHead(days);
         this.vertical_head();
+        this.row_timeline();
+        this.current_day_disp(); //매개변수 현재 일자에 셀렉
         return;
     };
     // *public end*
@@ -83,15 +87,14 @@ var TIMELINE = /** @class */ (function () {
         var $tmp_wrap = document.createDocumentFragment();
         var week = ["일", "월", "화", "수", "목", "금", "토"];
         var cell_w = this._aspect_week.getPosition_px(1);
-        var cell_h = 30;
+        var head_cell_h = 55; //
         // 좌측 time head offset
-        var offset_w = 50;
-        this._aspect_week.pOffset = offset_w;
+        this._aspect_week.pOffset = this._offset_width;
         //week
         var key = ["x", "y", "fill", "font-size", "text-anchor"];
         week.map(function (week, idx) {
-            var pos_x = _this._aspect_week.getPosition_px(idx) + offset_w;
-            var val = [pos_x + cell_w / 2, cell_h, "black", "15px", "middle"];
+            var pos_x = _this._aspect_week.getPosition_px(idx) + _this._offset_width;
+            var val = [pos_x + cell_w / 2, head_cell_h, "black", "15px", "middle"];
             var $node = _this.create_shape("text", key, val);
             $node.textContent = "".concat(days[idx], "(").concat(week, ")");
             $tmp_wrap.appendChild($node);
@@ -100,6 +103,44 @@ var TIMELINE = /** @class */ (function () {
     };
     TIMELINE.prototype.vertical_head = function () {
         // to do
+        var $tmp_wrap = document.createDocumentFragment();
+        var cell_h = this._aspect_time.getPosition_px(1);
+        this._aspect_time.pOffset = cell_h;
+        // 좌측 time head offset
+        var key = ["x", "y", "fill", "font-size", "text-anchor"];
+        for (var hour = 0; hour < 25; hour++) {
+            var pos_y = this._aspect_time.getPosition_px(hour) + cell_h;
+            var val = [
+                this._offset_width,
+                pos_y + cell_h / 2,
+                "black",
+                "15px",
+                "middle",
+            ];
+            var $node = this.create_shape("text", key, val);
+            $node.textContent = "".concat(hour.toString().length < 2 ? "0" + hour : hour, "h");
+            $tmp_wrap.appendChild($node);
+        }
+        this._$root.appendChild($tmp_wrap);
+    };
+    TIMELINE.prototype.row_timeline = function () {
+        //todo
+        var $tmp_wrap = document.createDocumentFragment();
+        var cell_w = this._aspect_week.getPosition_px(1);
+        var cell_h = this._aspect_time.getPosition_px(1);
+        var line_size = this._screen_size["w"];
+        var key = ["x1", "y1", "x2", "y2", "stroke", "stroke-width"];
+        var text_center = 28;
+        for (var hour = 0; hour < 25; hour++) {
+            var pos_y = this._aspect_time.getPosition_px(hour) + cell_h + text_center;
+            var val = [0, pos_y, line_size, pos_y, "#1abc9c", "0.2px"];
+            var $node = this.create_shape("line", key, val);
+            $tmp_wrap.appendChild($node);
+        }
+        this._$root.appendChild($tmp_wrap);
+    };
+    TIMELINE.prototype.current_day_disp = function () {
+        //todo
     };
     return TIMELINE;
 }());
