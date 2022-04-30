@@ -2,6 +2,7 @@
 
 웹 콘테츠 API 개발 <br/>
 ver 0.004 :
+- branch-addfunc1
   > - timeline 클래스구현<br/>
   >   - week head 구현 완료<br/>
   >   - 24h time head 구현 완료<br/>
