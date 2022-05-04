@@ -48,10 +48,11 @@ var TIMELINE = /** @class */ (function () {
         this._screen_size = screen_size;
         this._$root = document.getElementsByClassName("canvas")[0];
         this._aspect_week = new aspect_ratio(screen_size["w"], 7);
-        this._aspect_time = new aspect_ratio(screen_size["h"], 24);
+        this._aspect_time = new aspect_ratio(screen_size["h"], 25);
         var pos_x = this._aspect_week.getPosition_px(1);
         this._offset_pos = { x: 100, y: 10 };
-        this._offset_width = 50;
+        this._offset_width = 30;
+        this._offset_height = 10;
         /*
         let key = ["x", "height", "y", "width", "fill"];
         let val = [offset_x * 1, screen_size["h"] + offset_y, 0, pos_x, "#b2bec3"];
@@ -64,11 +65,11 @@ var TIMELINE = /** @class */ (function () {
     // *public begin*
     //LDH8282 func: addplan(['name', 'desc', 'date_start', 'date_end', 'fill_color'])
     TIMELINE.prototype.draw = function () {
-        var days = [1, 2, 3, 4, 5, 6, 7]; //LDH8282 매개변수에서 입력가능하도록
-        this.rowHead(days);
+        this.rowHead();
         this.vertical_head();
         this.row_timeline();
-        this.current_day_disp(); //매개변수 현재 일자에 셀렉
+        this.current_day_disp(); //요일및 일자 표시
+        this.curr_time_line_disp(); //현재시간표시
         return;
     };
     // *public end*
@@ -82,21 +83,52 @@ var TIMELINE = /** @class */ (function () {
         return $horizon_line;
     };
     // 7개의 요일 표시
-    TIMELINE.prototype.rowHead = function (days) {
+    TIMELINE.prototype.rowHead = function () {
         var _this = this;
-        var $tmp_wrap = document.createDocumentFragment();
-        var week = ["일", "월", "화", "수", "목", "금", "토"];
         var cell_w = this._aspect_week.getPosition_px(1);
-        var head_cell_h = 55; //
+        var cell_h = this._aspect_time.getPosition_px(1);
+        this._aspect_week.pOffset = this._offset_width * 2;
         // 좌측 time head offset
-        this._aspect_week.pOffset = this._offset_width;
         //week
-        var key = ["x", "y", "fill", "font-size", "text-anchor"];
+        var key = [
+            "x",
+            "y",
+            "fill",
+            "font-size",
+            "text-anchor",
+            "alignment-baseline",
+        ];
+        var day_colors = [
+            "red",
+            "black",
+            "black",
+            "black",
+            "black",
+            "black",
+            "blue",
+        ];
+        // 날짜 표시
+        var findDate = function (offset_day) {
+            if (offset_day === void 0) { offset_day = 0; }
+            var day = new Date();
+            day.setDate(day.getDate() + offset_day);
+            return day.toDateString().split(" ")[2];
+        };
+        var day_idx = new Date().getDay(); //현재 요일 idx
+        var $tmp_wrap = document.createDocumentFragment();
+        var week = ["\uC77C", "\uC6D4", "\uD654", "\uC218", "\uBAA9", "\uAE08", "\uD1A0"];
         week.map(function (week, idx) {
-            var pos_x = _this._aspect_week.getPosition_px(idx) + _this._offset_width;
-            var val = [pos_x + cell_w / 2, head_cell_h, "black", "15px", "middle"];
+            var pos_x = _this._aspect_week.getPosition_px(idx);
+            var val = [
+                pos_x + _this._offset_width * 4,
+                cell_h / 2,
+                day_colors[idx],
+                "15px",
+                "middle",
+                "middle",
+            ];
             var $node = _this.create_shape("text", key, val);
-            $node.textContent = "".concat(days[idx], "(").concat(week, ")");
+            $node.textContent = "".concat(findDate(idx - day_idx), "(").concat(week, ")");
             $tmp_wrap.appendChild($node);
         });
         this._$root.appendChild($tmp_wrap);
@@ -104,35 +136,47 @@ var TIMELINE = /** @class */ (function () {
     TIMELINE.prototype.vertical_head = function () {
         // to do
         var $tmp_wrap = document.createDocumentFragment();
+        this._aspect_time.pOffset = this._offset_height;
         var cell_h = this._aspect_time.getPosition_px(1);
-        this._aspect_time.pOffset = cell_h;
+        // time head gide line
+        var key = ["x1", "y1", "x2", "y2", "stroke", "stroke-width"];
+        var val = [
+            this._offset_width * 2,
+            0,
+            this._offset_width * 2,
+            this._screen_size["h"],
+            "black",
+            "0.5px",
+        ];
+        var $node = this.create_shape("line", key, val);
+        $tmp_wrap.appendChild($node);
         // 좌측 time head offset
-        var key = ["x", "y", "fill", "font-size", "text-anchor"];
-        for (var hour = 0; hour < 25; hour++) {
+        key = ["x", "y", "fill", "font-size", "text-anchor", "alignment-baseline"];
+        for (var hour = 0; hour < 26; hour++) {
             var pos_y = this._aspect_time.getPosition_px(hour) + cell_h;
-            var val = [
+            var val_1 = [
                 this._offset_width,
-                pos_y + cell_h / 2,
+                pos_y,
                 "black",
                 "15px",
                 "middle",
+                "middle",
             ];
-            var $node = this.create_shape("text", key, val);
-            $node.textContent = "".concat(hour.toString().length < 2 ? "0" + hour : hour, "h");
-            $tmp_wrap.appendChild($node);
+            var $node_1 = this.create_shape("text", key, val_1);
+            $node_1.textContent = "".concat(hour.toString().length < 2 ? "0" + hour : hour, "h"); //두자리수 표현
+            $tmp_wrap.appendChild($node_1);
         }
         this._$root.appendChild($tmp_wrap);
     };
     TIMELINE.prototype.row_timeline = function () {
         //todo
         var $tmp_wrap = document.createDocumentFragment();
-        var cell_w = this._aspect_week.getPosition_px(1);
         var cell_h = this._aspect_time.getPosition_px(1);
         var line_size = this._screen_size["w"];
         var key = ["x1", "y1", "x2", "y2", "stroke", "stroke-width"];
-        var text_center = 28;
+        //time line draw
         for (var hour = 0; hour < 25; hour++) {
-            var pos_y = this._aspect_time.getPosition_px(hour) + cell_h + text_center;
+            var pos_y = this._aspect_time.getPosition_px(hour) + cell_h;
             var val = [0, pos_y, line_size, pos_y, "#1abc9c", "0.2px"];
             var $node = this.create_shape("line", key, val);
             $tmp_wrap.appendChild($node);
@@ -141,6 +185,42 @@ var TIMELINE = /** @class */ (function () {
     };
     TIMELINE.prototype.current_day_disp = function () {
         //todo
+        var cur_date = new Date();
+        var day_idx = cur_date.getDay();
+        var scr_h = this._screen_size["h"];
+        var cell_w = this._aspect_week.getPosition_px(1);
+        var pos_x = this._aspect_week.getPosition_px(day_idx) + this._offset_width * 2;
+        var key = ["x", "height", "y", "width", "fill", "fill-opacity"];
+        var val = [pos_x, scr_h, 0, cell_w, "#b2bec3", "0.4"];
+        var $node = this.create_shape("rect", key, val);
+        var $tmp_wrap = document.createDocumentFragment();
+        $tmp_wrap.appendChild($node);
+        this._$root.appendChild($tmp_wrap);
+    };
+    TIMELINE.prototype.curr_time_line_disp = function () {
+        //todo
+        var $tmp_wrap = document.createDocumentFragment();
+        var day_idx = new Date().getDay();
+        var curr_hour = new Date().getHours();
+        var curr_min = new Date().getMinutes();
+        var cell_w = this._aspect_week.getPosition_px(1);
+        var cell_h = this._aspect_time.getPosition_px(1);
+        this._aspect_time.pOffset = this._offset_height;
+        var pos_x = this._aspect_week.getPosition_px(day_idx) + this._offset_width * 2;
+        var pos_y = this._aspect_time.getPosition_px(curr_hour) + cell_h; //hour 칸
+        var min_ratio = curr_min * (cell_h / 60); //min 칸면적
+        var key = ["x1", "y1", "x2", "y2", "stroke", "stroke-width"];
+        var val = [
+            pos_x,
+            pos_y + min_ratio,
+            pos_x + cell_w,
+            pos_y + min_ratio,
+            "#ff0000",
+            "1px",
+        ];
+        var $node = this.create_shape("line", key, val);
+        $tmp_wrap.appendChild($node);
+        this._$root.appendChild($tmp_wrap);
     };
     return TIMELINE;
 }());
@@ -195,91 +275,6 @@ function main3() {
 }
 main3();
 /*
-function main2() {
-  // aspect ratio'
-  let offset = 10;
-  let scr_w = $svg.clientWidth;
-  let scr_h = $svg.clientHeight - offset;
-
-  let aspect_w = new aspect_ratio(scr_w, 7); //월~일 (7의배수)
-  let aspect_h = new aspect_ratio(scr_h, 24, offset); //0h~24h (24의 배수)
-
-  //column 칸
-  let pos_x = aspect_w.getPosition_px(1);
-  let key = ["x", "height", "y", "width", "fill"];
-  let val = [pos_x * 1, scr_h + offset, 0, pos_x, "#b2bec3"];
-  let $node: Element = create_shape("rect", key, val);
-  let $tmp_wrap = document.createDocumentFragment();
-  $tmp_wrap.appendChild($node);
-
-  // 요일 표시
-  //mon
-  let cell_w = aspect_w.getPosition_px(1);
-  pos_x = aspect_w.getPosition_px(0);
-  key = ["x", "y", "fill", "font-size", "text-anchor"];
-  val = [pos_x + cell_w / 2, 10 + offset, "black", "15px", "middle"];
-  $node = create_shape("text", key, val);
-  $node.textContent = "월";
-  $tmp_wrap.appendChild($node);
-
-  //tue
-  pos_x = aspect_w.getPosition_px(1);
-  key = ["x", "y", "fill", "font-size", "text-anchor"];
-  val = [pos_x + cell_w / 2, 10 + offset, "black", "15px", "middle"];
-  $node = create_shape("text", key, val);
-  $node.textContent = "화";
-  $tmp_wrap.appendChild($node);
-
-  //wen
-  pos_x = aspect_w.getPosition_px(2);
-  key = ["x", "y", "fill", "font-size", "text-anchor"];
-  val = [pos_x + cell_w / 2, 10 + offset, "black", "15px", "middle"];
-  $node = create_shape("text", key, val);
-  $node.textContent = "수";
-  $tmp_wrap.appendChild($node);
-
-  //row
-
-  //let screen_h = $svg.clientHeight; //px
-  for (let i = 1; i < 25; i++) {
-    let pos_y = aspect_h.getPosition_px(i);
-    key = ["x1", "y1", "x2", "y2", "stroke", "stroke-width"];
-    val = [0, pos_y, 550, pos_y, "#dfe6e9", "px"];
-    $node = create_shape("line", key, val);
-    $tmp_wrap.appendChild($node);
-  }
-
-  $svg.appendChild($tmp_wrap);
-}
-
-function main() {
-  let $tmp_wrap = document.createDocumentFragment();
-  let key = ["x1", "y1", "x2", "y2", "stroke", "stroke-width"];
-  let val = [0, 0, 0, 500, "#1abc9c", "1px"];
-
-  // 1. 10개 가로라인 만들기 10px
-  for (let i = 0; i < 10; i++) {
-    val[0] = val[2] = i * 50 + LM;
-    let $node: Element = create_shape("line", key, val);
-
-    $tmp_wrap.appendChild($node);
-  }
-
-  // 1. 10개 세로라인 만들기 10px
-  val = [0, 0, 500, 0, "#2c3e50", "1px"];
-  for (let i = 0; i < 10; i++) {
-    val[1] = val[3] = i * 50 + LM;
-    let $node: Element = create_shape("line", key, val);
-
-    $tmp_wrap.appendChild($node);
-  }
-
-  // 2. 수직라인 만들기 10px
-  // 3.
-  $svg.appendChild($tmp_wrap);
-}
-*/
-/*
 let xmlns = "http://www.w3.org/2000/svg";
 let $horizon_line = document.createElementNS(xmlns, "line");
 $horizon_line.setAttribute("x1", "0");
@@ -289,13 +284,6 @@ $horizon_line.setAttribute("y2", "100");
 $horizon_line.setAttribute("stroke", "black");
 $horizon_line.setAttribute("stroke-width", "2px");
 */
-// use Fragment
-//let $tmp_wrap = document.createDocumentFragment();
-//$tmp_wrap.appendChild($horizon_line);
-// use appendChild
-//$svg.appendChild($horizon_line);
-// use innerHTML
-//$svg.innerHTML = $horizon_line.outerHTML;
 
 })();
 
