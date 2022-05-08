@@ -1,3 +1,13 @@
+export type PLANTYPE = {
+  pk: number;
+  cls: string;
+  name: string;
+  disc: string;
+  start_time: string;
+  end_time: string;
+  color: string;
+  fill: string;
+}; //'name', 'discription', 'start_time', 'end_time'
 export class aspect_ratio {
   private _screen_size: number;
   private _disp_size: number;
@@ -40,9 +50,10 @@ export class TIMELINE {
   private _screen_size: {};
   private _aspect_week: aspect_ratio;
   private _aspect_time: aspect_ratio;
-  private _offset_pos: POSITION;
   private _offset_width: number;
   private _offset_height: number;
+  private _planSet: PLANTYPE[];
+
   constructor(screen_size: {}) {
     this._screen_size = screen_size;
     this._$root = document.getElementsByClassName("canvas")[0];
@@ -51,9 +62,10 @@ export class TIMELINE {
     this._aspect_time = new aspect_ratio(screen_size["h"], 25);
 
     let pos_x = this._aspect_week.getPosition_px(1);
-    this._offset_pos = { x: 100, y: 10 };
     this._offset_width = 30;
     this._offset_height = 10;
+    this._planSet = [];
+
     /*
     let key = ["x", "height", "y", "width", "fill"];
     let val = [offset_x * 1, screen_size["h"] + offset_y, 0, pos_x, "#b2bec3"];
@@ -66,17 +78,114 @@ export class TIMELINE {
 
   // *public begin*
   //LDH8282 func: addplan(['name', 'desc', 'date_start', 'date_end', 'fill_color'])
+  public addPlan(plan: PLANTYPE): void {
+    this._planSet.push(plan);
+  }
   public draw(): void {
     this.rowHead();
-    this.vertical_head();
-    this.row_timeline();
+    this.vertical_head(); // 요일 column 표시
+    this.row_timeline(); //hour tick
     this.current_day_disp(); //요일및 일자 표시
     this.curr_time_line_disp(); //현재시간표시
+    this.apply_plan();
     return;
   }
   // *public end*
 
   // *private begin*
+  private apply_plan(): void {
+    //LDH8282 다른색 겹치는시간 day width 대비 비율 분리
+    let usrs = this.another_usr();
+
+    //LDH8282 같은색 겹치는시간 plan 합치기
+    //intersection = same_usr_intersection_merge(target_idx)
+
+    this._planSet.map((plan, idx) => {
+      // plan_background 모서리둥근 사각형
+      this._aspect_week.pOffset = this._offset_width * 2;
+      let plan_w = (this._aspect_week.getPosition_px(1) / usrs.size) * 0.95;
+
+      //usr에따른 plan_w 나누기
+      //2개의plan: cell_w에서 1/2의 각 95% 비율 적용
+      //3개의plan: cell_w에서 1/3의 각 95% 비율 적용
+      //plan_w = (plan_w / usrs.size) * 0.95; //cell_w의 95%
+      let cell_w = this._aspect_week.getPosition_px(1);
+      let usr_idx = usrs.get(plan.pk)[1];
+      let usr_offset = (cell_w / usrs.size) * usr_idx;
+
+      //day pos
+      let day = new Date(plan.start_time).getDay();
+      let plan_pos_x =
+        this._aspect_week.getPosition_px(day) +
+        this._offset_width * 2 +
+        usr_offset; //hour 칸
+
+      //time start
+      let cell_h = this._aspect_time.getPosition_px(1);
+      let hours = new Date(plan.start_time).getHours();
+      let st_pos_y = this._aspect_time.getPosition_px(hours) + cell_h; //hour 칸
+      let min = new Date(plan.start_time).getMinutes();
+      let st_min = min * (cell_h / 60); //min 칸면적
+      //time end
+      hours = new Date(plan.end_time).getHours();
+      let ed_pos_y = this._aspect_time.getPosition_px(hours) + cell_h; //hour 칸
+      min = new Date(plan.end_time).getMinutes();
+      let ed_min = min * (cell_h / 60); //min 칸면적
+
+      // calcul height
+      let height = ed_pos_y + ed_min - (st_pos_y + st_min);
+      let key = [
+        "id",
+        "x",
+        "height",
+        "y",
+        "width",
+        "fill",
+        "fill-opacity",
+        "rx",
+        "ry",
+        "start_time",
+        "end_time",
+      ];
+      let val = [
+        `${plan.pk}`,
+        plan_pos_x,
+        height,
+        st_pos_y + st_min,
+        plan_w,
+        `${plan.fill}`,
+        "0.4",
+        "10",
+        "10",
+        `${plan.start_time}`,
+        `${plan.end_time}`,
+      ];
+      let $node: Element = this.create_shape("rect", key, val);
+      let $tmp_wrap = document.createDocumentFragment();
+      $tmp_wrap.appendChild($node);
+      this._$root.appendChild($tmp_wrap);
+
+      //LDH8282 plan text: 디스크립션
+    });
+
+    return;
+  }
+  //LDH8282 같은 유저의 중첩일정 병합
+  //private same_usr_intersection_merge(target_idx: number){
+  //todo
+  //}
+  // 다른 유저의 중첩 일정 갯수
+  private another_usr(): Map<number, any[]> {
+    //todo
+    //svg 에 올려진 all plan
+    let usr_map: Map<number, any[]> = new Map();
+    let cnt: number = 0;
+    this._planSet.forEach((val, idx) => {
+      usr_map.set(val.pk, [val.name, cnt++]);
+    });
+
+    return usr_map;
+  }
   private create_shape(type: string, prop: string[], val: any[]): Element {
     let xmlns = "http://www.w3.org/2000/svg";
     let $horizon_line = document.createElementNS(xmlns, type);
@@ -239,6 +348,10 @@ export class TIMELINE {
     $tmp_wrap.appendChild($node);
     this._$root.appendChild($tmp_wrap);
   }
+  //ver1.000
   //LDH8282 func: mouse over event descript
   // *private end*
+
+  //ver2.000
+  //LDH8282 선택된 날짜의 그 week 표시
 }

@@ -50,9 +50,9 @@ var TIMELINE = /** @class */ (function () {
         this._aspect_week = new aspect_ratio(screen_size["w"], 7);
         this._aspect_time = new aspect_ratio(screen_size["h"], 25);
         var pos_x = this._aspect_week.getPosition_px(1);
-        this._offset_pos = { x: 100, y: 10 };
         this._offset_width = 30;
         this._offset_height = 10;
+        this._planSet = [];
         /*
         let key = ["x", "height", "y", "width", "fill"];
         let val = [offset_x * 1, screen_size["h"] + offset_y, 0, pos_x, "#b2bec3"];
@@ -64,16 +64,104 @@ var TIMELINE = /** @class */ (function () {
     }
     // *public begin*
     //LDH8282 func: addplan(['name', 'desc', 'date_start', 'date_end', 'fill_color'])
+    TIMELINE.prototype.addPlan = function (plan) {
+        this._planSet.push(plan);
+    };
     TIMELINE.prototype.draw = function () {
         this.rowHead();
-        this.vertical_head();
-        this.row_timeline();
+        this.vertical_head(); // 요일 column 표시
+        this.row_timeline(); //hour tick
         this.current_day_disp(); //요일및 일자 표시
         this.curr_time_line_disp(); //현재시간표시
+        this.apply_plan();
         return;
     };
     // *public end*
     // *private begin*
+    TIMELINE.prototype.apply_plan = function () {
+        var _this = this;
+        //LDH8282 다른색 겹치는시간 day width 대비 비율 분리
+        var usrs = this.another_usr();
+        //LDH8282 같은색 겹치는시간 plan 합치기
+        //intersection = same_usr_intersection_merge(target_idx)
+        this._planSet.map(function (plan, idx) {
+            // plan_background 모서리둥근 사각형
+            _this._aspect_week.pOffset = _this._offset_width * 2;
+            var plan_w = (_this._aspect_week.getPosition_px(1) / usrs.size) * 0.95;
+            //usr에따른 plan_w 나누기
+            //2개의plan: cell_w에서 1/2의 각 95% 비율 적용
+            //3개의plan: cell_w에서 1/3의 각 95% 비율 적용
+            //plan_w = (plan_w / usrs.size) * 0.95; //cell_w의 95%
+            var cell_w = _this._aspect_week.getPosition_px(1);
+            var usr_idx = usrs.get(plan.pk)[1];
+            var usr_offset = (cell_w / usrs.size) * usr_idx;
+            //day pos
+            var day = new Date(plan.start_time).getDay();
+            var plan_pos_x = _this._aspect_week.getPosition_px(day) +
+                _this._offset_width * 2 +
+                usr_offset; //hour 칸
+            //time start
+            var cell_h = _this._aspect_time.getPosition_px(1);
+            var hours = new Date(plan.start_time).getHours();
+            var st_pos_y = _this._aspect_time.getPosition_px(hours) + cell_h; //hour 칸
+            var min = new Date(plan.start_time).getMinutes();
+            var st_min = min * (cell_h / 60); //min 칸면적
+            //time end
+            hours = new Date(plan.end_time).getHours();
+            var ed_pos_y = _this._aspect_time.getPosition_px(hours) + cell_h; //hour 칸
+            min = new Date(plan.end_time).getMinutes();
+            var ed_min = min * (cell_h / 60); //min 칸면적
+            // calcul height
+            var height = ed_pos_y + ed_min - (st_pos_y + st_min);
+            var key = [
+                "id",
+                "x",
+                "height",
+                "y",
+                "width",
+                "fill",
+                "fill-opacity",
+                "rx",
+                "ry",
+                "start_time",
+                "end_time",
+            ];
+            var val = [
+                "".concat(plan.pk),
+                plan_pos_x,
+                height,
+                st_pos_y + st_min,
+                plan_w,
+                "".concat(plan.fill),
+                "0.4",
+                "10",
+                "10",
+                "".concat(plan.start_time),
+                "".concat(plan.end_time),
+            ];
+            var $node = _this.create_shape("rect", key, val);
+            var $tmp_wrap = document.createDocumentFragment();
+            $tmp_wrap.appendChild($node);
+            _this._$root.appendChild($tmp_wrap);
+            //LDH8282 plan text: 디스크립션
+        });
+        return;
+    };
+    //LDH8282 같은 유저의 중첩일정 병합
+    //private same_usr_intersection_merge(target_idx: number){
+    //todo
+    //}
+    // 다른 유저의 중첩 일정 갯수
+    TIMELINE.prototype.another_usr = function () {
+        //todo
+        //svg 에 올려진 all plan
+        var usr_map = new Map();
+        var cnt = 0;
+        this._planSet.forEach(function (val, idx) {
+            usr_map.set(val.pk, [val.name, cnt++]);
+        });
+        return usr_map;
+    };
     TIMELINE.prototype.create_shape = function (type, prop, val) {
         var xmlns = "http://www.w3.org/2000/svg";
         var $horizon_line = document.createElementNS(xmlns, type);
@@ -271,6 +359,28 @@ function main3() {
     var scr_w = $svg.clientWidth;
     var scr_h = $svg.clientHeight;
     var tl = new util_1.TIMELINE({ w: scr_w, h: scr_h });
+    var my_plan = {
+        pk: 0,
+        cls: "plan",
+        name: "홍길동",
+        disc: "무술훈련",
+        start_time: "2022-05-08T01:30:00",
+        end_time: "2022-05-08T02:30:00",
+        color: "white",
+        fill: "blue",
+    }; //'name', 'discription', 'start_time', 'end_time'
+    tl.addPlan(my_plan);
+    var my_plan2 = {
+        pk: 1,
+        cls: "plan",
+        name: "콩쥐",
+        disc: "청소하기",
+        start_time: "2022-05-08T01:30:00",
+        end_time: "2022-05-08T04:00:00",
+        color: "white",
+        fill: "red",
+    }; //'name', 'discription', 'start_time', 'end_time'
+    tl.addPlan(my_plan2);
     tl.draw();
 }
 main3();
