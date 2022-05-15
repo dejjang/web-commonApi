@@ -1,3 +1,5 @@
+import { CONST_DESCRIPTION_HTML } from "./const_html";
+
 export type PLANTYPE = {
   pk: number;
   cls: string;
@@ -94,46 +96,15 @@ export class TIMELINE {
 
   // *private begin*
   private apply_plan(): void {
-    //LDH8282 다른색 겹치는시간 day width 대비 비율 분리
-    let usrs = this.another_usr();
-
     //LDH8282 같은색 겹치는시간 plan 합치기
     //intersection = same_usr_intersection_merge(target_idx)
 
     this._planSet.map((plan, idx) => {
-      // plan_background 모서리둥근 사각형
-      this._aspect_week.pOffset = this._offset_width * 2;
-      let plan_w = (this._aspect_week.getPosition_px(1) / usrs.size) * 0.95;
+      //week column
+      let week_x = this.getWeekPos(plan);
+      //time line
+      let plan_y = this.getTimeLinePos(plan);
 
-      //usr에따른 plan_w 나누기
-      //2개의plan: cell_w에서 1/2의 각 95% 비율 적용
-      //3개의plan: cell_w에서 1/3의 각 95% 비율 적용
-      //plan_w = (plan_w / usrs.size) * 0.95; //cell_w의 95%
-      let cell_w = this._aspect_week.getPosition_px(1);
-      let usr_idx = usrs.get(plan.pk)[1];
-      let usr_offset = (cell_w / usrs.size) * usr_idx;
-
-      //day pos
-      let day = new Date(plan.start_time).getDay();
-      let plan_pos_x =
-        this._aspect_week.getPosition_px(day) +
-        this._offset_width * 2 +
-        usr_offset; //hour 칸
-
-      //time start
-      let cell_h = this._aspect_time.getPosition_px(1);
-      let hours = new Date(plan.start_time).getHours();
-      let st_pos_y = this._aspect_time.getPosition_px(hours) + cell_h; //hour 칸
-      let min = new Date(plan.start_time).getMinutes();
-      let st_min = min * (cell_h / 60); //min 칸면적
-      //time end
-      hours = new Date(plan.end_time).getHours();
-      let ed_pos_y = this._aspect_time.getPosition_px(hours) + cell_h; //hour 칸
-      min = new Date(plan.end_time).getMinutes();
-      let ed_min = min * (cell_h / 60); //min 칸면적
-
-      // calcul height
-      let height = ed_pos_y + ed_min - (st_pos_y + st_min);
       let key = [
         "id",
         "x",
@@ -149,10 +120,10 @@ export class TIMELINE {
       ];
       let val = [
         `${plan.pk}`,
-        plan_pos_x,
-        height,
-        st_pos_y + st_min,
-        plan_w,
+        week_x["start_x"],
+        plan_y["height"],
+        plan_y["start_y"],
+        week_x["width"],
         `${plan.fill}`,
         "0.4",
         "10",
@@ -170,6 +141,48 @@ export class TIMELINE {
 
     return;
   }
+  private getWeekPos(plan: PLANTYPE): {} {
+    let usrs = this.another_usr();
+    this._aspect_week.pOffset = this._offset_width * 2;
+    let plan_w = (this._aspect_week.getPosition_px(1) / usrs.size) * 0.95;
+
+    //usr에따른 plan_w 나누기
+    //2개의plan: cell_w에서 1/2의 각 95% 비율 적용
+    //3개의plan: cell_w에서 1/3의 각 95% 비율 적용
+    //plan_w = (plan_w / usrs.size) * 0.95; //cell_w의 95%
+    let cell_w = this._aspect_week.getPosition_px(1);
+    let usr_idx = usrs.get(plan.pk)[1];
+    let usr_offset = (cell_w / usrs.size) * usr_idx;
+
+    //day pos
+    let day = new Date(plan.start_time).getDay();
+    let st_plan_pos =
+      this._aspect_week.getPosition_px(day) +
+      this._offset_width * 2 +
+      usr_offset; //hour 칸
+
+    return { start_x: st_plan_pos, width: plan_w };
+  }
+  private getTimeLinePos(plan: PLANTYPE): {} {
+    //time start
+    let cell_h = this._aspect_time.getPosition_px(1);
+    let hours = new Date(plan.start_time).getHours();
+    let st_pos_y = this._aspect_time.getPosition_px(hours) + cell_h; //hour 칸
+    let min = new Date(plan.start_time).getMinutes();
+    let st_min = min * (cell_h / 60); //min 칸면적
+    //time end
+    hours = new Date(plan.end_time).getHours();
+    let ed_pos_y = this._aspect_time.getPosition_px(hours) + cell_h; //hour 칸
+    min = new Date(plan.end_time).getMinutes();
+    let ed_min = min * (cell_h / 60); //min 칸면적
+
+    // calcul height
+    let st_pos = st_pos_y + st_min;
+    let height = ed_pos_y + ed_min - (st_pos_y + st_min);
+
+    return { start_y: st_pos, height: height };
+  }
+
   //LDH8282 같은 유저의 중첩일정 병합
   //private same_usr_intersection_merge(target_idx: number){
   //todo

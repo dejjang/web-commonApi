@@ -1,11 +1,18 @@
 # web-commonApi
 
 웹 콘테츠 API 개발 <br/>
+ver 0.006 :
+
+- branch-addfunc1
+  > - 유저플랜 정보박스 추가<br/>
+  > - 기타 마이너 리팩토링 작업<br/>
+
 ver 0.005 :
+
 - branch-addfunc1
   > - 시간 설정에 따른 유저 plan 영역 추가 완료<br/>
   > - 유저들간 겹치는 시간대 plan 영역 분리 기능 완료<br/>
-     
+
 ver 0.004 :
 
 - branch-addfunc1_2
