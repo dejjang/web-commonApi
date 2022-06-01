@@ -2,8 +2,9 @@
 
 웹 콘테츠 API 개발 <br/>
 ver 1.000 :
-  > - 같은 유저 및 다른유저의 겹치는 시간대 플랜영역 분리 완료<br/>
-     
+
+> - 같은 유저 및 다른유저의 겹치는 시간대 플랜영역 분리 완료<br/>
+
 ver 0.006 :
 
 - branch-addfunc1
@@ -39,7 +40,11 @@ ver 0.002 :
   - branch-addfunc1
     > timeline 클래스구현
 
-ver 0.001 : - 수평, 수직라인 그리기
+ver 0.001 :
 
-> branch-addfunc1
-> aspect-ratio 기능구현
+- 초기 필요 기능 분석 [완료]
+  - js svg 노드 접근 수평, 수직라인 그리기
+  - 수평 aspect Ratio
+  - 수직 aspect Ratio <br/>
+  - branch-addfunc1 <br/>
+    > aspect-ratio 기능구현
