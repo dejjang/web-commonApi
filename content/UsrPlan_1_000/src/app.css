@@ -1,0 +1,12 @@
+@import './lib/css/util.css';
+
+html{
+    font-size: 15px;
+}
+
+body{
+    position: relative;
+}
+.canvas{
+    background-color: antiquewhite;
+}
